@@ -99,20 +99,30 @@ func (a *auther) setAccessTokenAuthHeader(req *http.Request, requestToken, reque
 // setRequestAuthHeader sets the OAuth1 header for making authenticated
 // requests with an AccessToken (token credential) according to RFC 5849 3.1.
 func (a *auther) setRequestAuthHeader(req *http.Request, accessToken *Token) error {
+	h, err := a.accessTokenAuthHeader(req, accessToken)
+	if err != nil {
+		return err
+	}
+	req.Header.Set(authorizationHeaderParam, h)
+	return nil
+}
+
+// AccessTokenAuthHeader gets the OAuth1 header for the access token request
+// (token credential) according to RFC 5849 2.3.
+func (a *auther) accessTokenAuthHeader(req *http.Request, accessToken *Token) (string, error) {
 	oauthParams := a.commonOAuthParams()
 	oauthParams[oauthTokenParam] = accessToken.Token
 	params, err := collectParameters(req, oauthParams)
 	if err != nil {
-		return err
+		return "", err
 	}
 	signatureBase := signatureBase(req, params)
 	signature, err := a.signer().Sign(accessToken.TokenSecret, signatureBase)
 	if err != nil {
-		return err
+		return "", err
 	}
 	oauthParams[oauthSignatureParam] = signature
-	req.Header.Set(authorizationHeaderParam, authHeaderValue(oauthParams))
-	return nil
+	return authHeaderValue(oauthParams), nil
 }
 
 // commonOAuthParams returns a map of the common OAuth1 protocol parameters,

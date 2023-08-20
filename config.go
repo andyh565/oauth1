@@ -180,6 +180,17 @@ func (c *Config) AccessToken(requestToken, requestSecret, verifier string) (acce
 	return accessToken, accessSecret, nil
 }
 
+// AccessTokenAuthHeader gets the OAuth1 header for the access token request
+// (token credential) according to RFC 5849 2.3.
+func (c *Config) AccessTokenAuthHeader(req *http.Request, accessToken, accessTokenSecret string) (string, error) {
+	a := newAuther(c)
+	s := &Token{
+		Token:       accessToken,
+		TokenSecret: accessTokenSecret,
+	}
+	return a.accessTokenAuthHeader(req, s)
+}
+
 func (c *Config) httpClient() *http.Client {
 	if c.HTTPClient != nil {
 		return c.HTTPClient
