@@ -184,11 +184,22 @@ func (c *Config) AccessToken(requestToken, requestSecret, verifier string) (acce
 // (token credential) according to RFC 5849 2.3.
 func (c *Config) AccessTokenAuthHeader(req *http.Request, accessToken, accessTokenSecret string) (string, error) {
 	a := newAuther(c)
-	s := &Token{
+	t := &Token{
 		Token:       accessToken,
 		TokenSecret: accessTokenSecret,
 	}
-	return a.accessTokenAuthHeader(req, s)
+	return a.accessTokenAuthHeader(req, t)
+}
+
+// SetRequestAuthHeader sets the OAuth1 header for the access token request
+// (token credential) according to RFC 5849 2.3.
+func (c *Config) SetRequestAuthHeader(req *http.Request, accessToken, accessTokenSecret string) error {
+	a := newAuther(c)
+	t := &Token{
+		Token:       accessToken,
+		TokenSecret: accessTokenSecret,
+	}
+	return a.setRequestAuthHeader(req, t)
 }
 
 func (c *Config) httpClient() *http.Client {
